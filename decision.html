@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Treatment preference questionnaire</title>
+  <style>
+    :root{
+      --bg:#f5f7fb;--panel:#ffffff;--text:#172033;--muted:#5b667a;--line:#dce3ee;--accent:#285cff;--accent-soft:#e9efff;--danger:#b42318;--shadow:0 18px 50px rgba(23,32,51,.08);--radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#eef3ff 0%,var(--bg) 320px);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);line-height:1.45}
+    a{color:var(--accent)}
+    .wrap{max-width:1120px;margin:0 auto;padding:28px 18px 120px}
+    .hero{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:26px;padding:28px;box-shadow:var(--shadow);backdrop-filter:blur(8px);margin-bottom:18px}
+    h1{margin:0 0 10px;font-size:clamp(2rem,4vw,3.4rem);letter-spacing:-.04em;line-height:1}
+    .lead{font-size:1.05rem;color:var(--muted);max-width:880px;margin:0}
+    .topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
+    .pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;color:var(--muted);font-size:.92rem}
+    .grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+    .question{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:0 8px 28px rgba(23,32,51,.045)}
+    .qhead{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+    .qnum{flex:0 0 auto;width:34px;height:34px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:800}
+    .qtext{font-weight:800;font-size:1.06rem;letter-spacing:-.015em}
+    .qhint{color:var(--muted);font-size:.92rem;margin-top:3px}
+    .options{display:grid;gap:8px}
+    .option{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;cursor:pointer;transition:.15s ease}
+    .option:hover{border-color:#9fb4ff;background:#fbfcff}
+    .option input{margin-top:3px;accent-color:var(--accent)}
+    .option.selected{border-color:var(--accent);background:var(--accent-soft)}
+    .summaryPanel{position:sticky;top:14px;background:#101827;color:#eef3ff;border-radius:22px;box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+    .summaryTop{padding:18px;border-bottom:1px solid rgba(255,255,255,.12)}
+    .summaryTop h2{margin:0 0 6px;font-size:1.15rem;letter-spacing:-.02em}
+    .summaryTop p{margin:0;color:#b9c5da;font-size:.92rem}
+    textarea{width:100%;min-height:520px;border:0;resize:vertical;padding:16px;background:#0b1220;color:#f8fbff;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;outline:none}
+    .buttons{display:flex;gap:8px;padding:12px;background:#101827;border-top:1px solid rgba(255,255,255,.12)}
+    button{border:0;border-radius:12px;padding:11px 13px;font-weight:800;cursor:pointer}
+    .primary{background:#fff;color:#101827;flex:1}
+    .secondary{background:rgba(255,255,255,.1);color:#fff}
+    .status{font-size:.86rem;color:#b9c5da;padding:0 12px 12px;min-height:22px}
+    .note{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;color:var(--muted);margin-bottom:14px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.summaryPanel{position:relative;top:auto}textarea{min-height:360px}.wrap{padding-bottom:40px}}
+    @media(max-width:560px){.hero{padding:20px}.question{padding:16px}.option{padding:11px}.qtext{font-size:1rem}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Treatment preference questionnaire</h1>
+      <p class="lead">This is for you to think through what matters most when comparing the injection pathway with the surgery pathway. It does not choose for you. Select the answers that feel closest, then copy the summary at the bottom.</p>
+      <div class="topbar">
+        <span class="pill">No free text</span>
+        <span class="pill">Select answers</span>
+        <span class="pill">Copyable summary</span>
+        <a class="pill" href="quizzes.html">Quiz selector</a>
+      </div>
+    </section>
+
+    <div class="grid">
+      <main id="questions"></main>
+      <aside class="summaryPanel">
+        <div class="summaryTop">
+          <h2>Copyable summary</h2>
+          <p>This updates automatically as you select answers.</p>
+        </div>
+        <textarea id="summary" readonly></textarea>
+        <div class="buttons">
+          <button class="primary" id="copyBtn" type="button">Copy summary</button>
+          <button class="secondary" id="clearBtn" type="button">Clear</button>
+        </div>
+        <div class="status" id="status"></div>
+      </aside>
+    </div>
+  </div>
+
+<script>
+const questions = [
+  {id:'q1', type:'multi', max:3, label:'What I most want treatment to improve', q:'What do you most want treatment to help you do again?', hint:'Select up to 3.', options:[
+    'Care for my baby more normally.', 'Bend down without severe pain.', 'Pick up or hold my baby more comfortably.', 'Sleep better.', 'Walk or move around the house more easily.', 'Reduce how much I need pregabalin or pain medication.', 'Feel less scared of another severe flare-up.', 'Feel more independent.', 'Get back closer to normal life, not just cope.', 'Feel that there is a clear way forward.'
+  ]},
+  {id:'q2', type:'multi', max:3, label:'What would make treatment feel worth it', q:'What would make a treatment feel worth it to you?', hint:'Select up to 3.', options:[
+    'If it gave me even partial relief, as long as daily life became more manageable.', 'If it helped me care for my baby more safely and comfortably.', 'If it reduced how much I need medication to function.', 'If it gave me relief that felt more reliable or longer-lasting.', 'If it helped me avoid going round in circles with appointments, waiting and uncertainty.', 'If it made me feel more in control of what happens next.', 'If it helped quickly, even if it might not be the final answer.', 'If it gave me the best chance of properly changing the situation.'
+  ]},
+  {id:'q3', type:'multi', label:'My biggest concerns about injection', q:'When you imagine the injection pathway, what worries you most?', hint:'Select all that apply.', options:[
+    'Waiting for the pain clinic appointment.', 'Waiting again for the actual injection.', 'Going through the wait and then the injection not working.', 'The injection helping only briefly.', 'The pain returning after I start coping again.', 'Still needing pregabalin afterwards.', 'Getting worse while waiting.', 'Feeling like surgery has only been delayed, not avoided.', 'Being left in limbo with no clear next step.', 'Repeated appointments and uncertainty.', 'The injection itself.'
+  ]},
+  {id:'q4', type:'multi', label:'My biggest concerns about surgery', q:'When you imagine the surgery pathway, what worries you most?', hint:'Select all that apply.', options:[
+    'Recovering while caring for a newborn.', 'Not being able to lift, bend or do baby-care tasks during recovery.', 'Needing more help from other people.', 'The operation itself.', 'Anaesthetic or complications.', 'Wound problems or recovery problems.', 'Still having pain afterwards.', 'Going through surgery and not improving enough.', 'Choosing surgery before knowing whether injection could have been enough.', 'Needing pain medication during recovery anyway.', 'Feeling temporarily less independent.'
+  ]},
+  {id:'q5', type:'multi', max:2, label:'The trade-off I am finding hardest', q:'Which feels harder to accept right now?', hint:'Choose one or two.', options:[
+    'A lower-risk pathway that might take longer and still not work.', 'A more invasive pathway with recovery demands.', 'Waiting for injection and then finding it does not help.', 'Having surgery and then finding it does not help enough.', 'Continuing to rely on pregabalin to function.', 'Being unable to care for my baby properly because of pain.', 'Needing a lot of help after surgery.', 'Being stuck without a clear next step.', 'Making a decision too quickly and regretting it.', 'Waiting too long and regretting it.'
+  ]},
+  {id:'q6', type:'single', label:'How I feel about temporary relief', q:'How do you feel about temporary relief?', hint:'Choose the closest option.', options:[
+    'Temporary relief would still be valuable if it helped me function now.', 'Temporary relief would be valuable if it helped me get through the newborn period.', 'Temporary relief is acceptable only if there is a clear next step if symptoms return.', 'Temporary relief would feel frustrating if I ended up back where I started.', 'Temporary relief would not feel enough if I still could not care for my baby properly.', 'Temporary relief would not feel enough if I stayed dependent on medication.', 'I am unsure; it depends how much relief and for how long.'
+  ]},
+  {id:'q7', type:'multi', label:'How I feel about waiting', q:'How do you feel about waiting?', hint:'Select all that apply.', options:[
+    'I can wait if pain is controlled enough to function.', 'I can wait if there is a clear review point.', 'I can wait if I know what happens if the first treatment does not work.', 'I can wait if it might help me avoid surgery.', 'I can wait for surgery if that feels like the more direct route.', 'Waiting feels difficult because my current function is poor.', 'Waiting feels difficult because I am caring for a newborn.', 'Waiting feels difficult because I am worried symptoms could worsen.', 'Waiting feels difficult because I do not want to stay dependent on pregabalin.', 'I mainly want the quickest route to meaningful improvement.'
+  ]},
+  {id:'q8', type:'multi', max:3, label:'How I feel about possible worsening', q:'How do you feel about symptoms worsening while waiting?', hint:'Select up to 3.', options:[
+    'Worsening would make me worry I should have chosen the more direct option sooner.', 'Worsening would be very hard because I am already struggling with baby care.', 'Worsening is one of the reasons I find waiting difficult.', 'I could tolerate some waiting if there was a clear way to escalate.', 'I would still feel it was reasonable to try the less invasive option first.', 'I am not mainly worried about worsening; I am more worried about treatment risks.', 'I am unsure.'
+  ]},
+  {id:'q9', type:'multi', label:'How I feel about pregabalin/medication', q:'How do you feel about pregabalin or medication being part of the picture?', hint:'Select all that apply.', options:[
+    'If pregabalin helps me function, I can accept it for now.', 'I can accept it short term, but I do not want it to become normal.', 'I am worried that without it I cannot do basic things.', 'I am worried about side effects, drowsiness or not feeling fully alert.', 'I am worried about breastfeeding, dependence or withdrawal.', 'I want the treatment path most likely to reduce my reliance on medication.', 'If treatment helped but I still needed pregabalin, I would feel disappointed.', 'If treatment helped me function, I could accept needing medication for a while.', 'I want a clearer medication plan either way.'
+  ]},
+  {id:'q10', type:'multi', label:'What matters most because I have a newborn', q:'Because you have a newborn, what matters most?', hint:'Select all that apply.', options:[
+    'I need to be able to pick up, hold, feed or settle my baby.', 'I need to avoid a recovery period that makes baby care impossible.', 'I need to avoid staying in pain so severe that baby care is already impossible.', 'I need to know whether I would have enough help at home.', 'I need to stay as independent as possible.', 'I could accept temporary dependence if it gave me a better chance of functioning afterwards.', 'I need the least disruption possible right now.', 'I need the strongest chance of becoming physically able again.', 'I am worried about sleep, exhaustion and coping emotionally.', 'I am worried about medication affecting how alert I feel with the baby.'
+  ]},
+  {id:'q11', type:'multi', label:'What would make injection feel acceptable', q:'What would make injection feel acceptable to you?', hint:'Select all that apply.', options:[
+    'If it can happen soon enough.', 'If pain is manageable while waiting.', 'If I know how long to wait before judging whether it worked.', 'If I know what counts as enough improvement.', 'If I know what happens if it does not work.', 'If I know surgery is still available later if needed.', 'If temporary relief would still help me practically.', 'If it reduces my need for medication.', 'If it helps me care for my baby.', 'If it feels like a genuine step, not being left in limbo.', 'If it helps me avoid or delay surgery during the newborn period.'
+  ]},
+  {id:'q12', type:'multi', label:'What would make surgery feel acceptable', q:'What would make surgery feel acceptable to you?', hint:'Select all that apply.', options:[
+    'If I can arrange enough help with the baby during recovery.', 'If recovery restrictions are realistic for my life.', 'If the current pain/function feels worse than the fear of recovery.', 'If it gives me a better chance of meaningful improvement.', 'If it gives me a better chance of reducing medication reliance.', 'If I want to avoid repeated waiting, appointments and failed steps.', 'If I feel I cannot spend more time in severe pain.', 'If I feel ready to accept short-term disruption for a better chance later.', 'If the recovery plan feels clear.', 'If it feels like the more direct way to move forward.'
+  ]},
+  {id:'q13', type:'single', label:'The kind of plan that feels most like me', q:'Which kind of plan would feel most like you?', hint:'Choose one.', options:[
+    'I would prefer to try the less invasive option first, as long as I know what happens if it fails.', 'I would prefer the more direct option if it gives me a better chance of meaningful improvement.', 'I would prefer whichever option can realistically help me care for my baby sooner.', 'I would prefer whichever option reduces the chance of staying dependent on medication.', 'I would prefer a staged plan with clear time limits.', 'I would prefer to avoid surgery for now if there is a reasonable alternative.', 'I would prefer to avoid a long pathway that may not work.', 'I do not know yet; both pathways have serious trade-offs for me.'
+  ]},
+  {id:'q14', type:'multi', max:3, label:'The three statements that feel most true', q:'Choose the three statements that feel most true.', hint:'Choose exactly 3 if possible.', options:[
+    'I need to be able to care for my baby.', 'I cannot stay dependent on pregabalin just to function.', 'I want to avoid surgery if a smaller option could work.', 'I do not want to wait through a long pathway that may fail.', 'I am willing to accept recovery if it gives a better chance of real improvement.', 'I need the least disruption possible right now.', 'I need a clear fallback if the first plan does not work.', 'I am more worried about staying like this than about the treatment itself.', 'I am more worried about treatment risks than about trying to manage longer.', 'I need to feel in control of the decision.', 'I need to avoid being left in limbo.', 'I need the route that best fits life with a newborn.'
+  ]},
+  {id:'q15', type:'multi', max:3, label:'The thing I most want treatment to help with', q:'The thing you most want treatment to help with is:', hint:'Choose up to 3.', options:[
+    'Caring for my baby more normally.', 'Being able to bend.', 'Being able to pick up or hold my baby.', 'Sleeping better.', 'Walking or moving around more easily.', 'Reducing severe pain.', 'Reducing pregabalin or pain medication.', 'Feeling less scared of another flare-up.', 'Feeling more independent.', 'Getting closer to normal life.', 'Avoiding a long treatment pathway that may not work.', 'Feeling more in control.'
+  ]},
+  {id:'q16', type:'multi', max:3, label:'The thing I am most afraid of with injection', q:'The thing you are most afraid of with injection is:', hint:'Choose up to 3.', options:[
+    'Waiting a long time for the pain appointment.', 'Waiting again for the injection.', 'The injection not working.', 'The injection only helping briefly.', 'Symptoms returning after temporary relief.', 'Staying dependent on pregabalin.', 'Getting worse while waiting.', 'Delaying surgery if surgery is eventually needed.', 'Being left in limbo.', 'Repeated appointments.', 'The injection procedure itself.'
+  ]},
+  {id:'q17', type:'multi', max:3, label:'The thing I am most afraid of with surgery', q:'The thing you are most afraid of with surgery is:', hint:'Choose up to 3.', options:[
+    'Recovery while caring for a newborn.', 'Not being able to lift, bend or do baby-care tasks during recovery.', 'Needing more help from others.', 'The operation itself.', 'Anaesthetic or complications.', 'Wound or recovery problems.', 'Surgery not helping enough.', 'Still needing medication afterwards.', 'Losing independence temporarily.', 'Regretting not trying injection first.'
+  ]},
+  {id:'q18', type:'multi', max:3, label:'The thing I most need because I have a newborn', q:'The thing you most need because you have a newborn is:', hint:'Choose up to 3.', options:[
+    'The least disruption possible.', 'The quickest meaningful improvement possible.', 'To be able to lift, hold or care for my baby.', 'To avoid a recovery period that I cannot manage.', 'To avoid staying in severe pain.', 'To avoid medication side effects affecting alertness.', 'Reliable help at home.', 'A plan that fits around baby care.', 'A treatment pathway that does not drag on.', 'A clearer sense of what happens next.'
+  ]},
+  {id:'q19', type:'multi', max:3, label:'The thing I most want to avoid', q:'The thing you most want to avoid is:', hint:'Choose up to 3.', options:[
+    'Staying in severe pain.', 'Staying dependent on pregabalin.', 'Being unable to care for my baby.', 'A long wait for treatment.', 'A treatment that does not work.', 'Relief that only lasts briefly.', 'Surgery if a smaller treatment could have worked.', 'Surgical recovery without enough support.', 'Complications or recovery problems.', 'Being left without a clear next step.', 'Making the wrong decision.', 'Feeling stuck between two difficult options.'
+  ]},
+  {id:'q20', type:'multi', max:3, label:'The outcome that would make treatment feel worth it', q:'The outcome that would make treatment feel worth it is:', hint:'Choose up to 3.', options:[
+    'I can care for my baby more normally.', 'I can bend or move with less pain.', 'I can sleep better.', 'I can reduce medication.', 'I feel less dependent on pregabalin.', 'I feel more independent.', 'I have fewer severe flare-ups.', 'I feel the improvement is meaningful, even if not perfect.', 'I feel the improvement is likely to last.', 'I feel there is a clear next step if it does not work.', 'I feel I made the choice that best fits my life now.'
+  ]},
+  {id:'q21', type:'single', label:'My instinct right now', q:'Your instinct right now is:', hint:'Choose one.', options:[
+    'I am leaning towards trying injection first if it can happen soon enough.', 'I am leaning towards injection first if there is a clear next step if it fails.', 'I am leaning towards surgery if it gives a better chance of meaningful improvement.', 'I am leaning towards surgery if I can arrange enough help during recovery.', 'I am open to either, but I do not want a long pathway with no clear endpoint.', 'I am open to either, but baby care and home support are the biggest factors.', 'I am open to either, but reducing medication reliance is the biggest factor.', 'I am open to either, but avoiding worsening or delay is the biggest factor.', 'I am genuinely unsure because both options have major trade-offs.'
+  ]}
+];
+
+const answers = {};
+const questionsEl = document.getElementById('questions');
+const summaryEl = document.getElementById('summary');
+const statusEl = document.getElementById('status');
+
+function render(){
+  questionsEl.innerHTML = '';
+  questions.forEach((item, idx)=>{
+    answers[item.id] = answers[item.id] || [];
+    const card = document.createElement('section');
+    card.className = 'question';
+    card.innerHTML = `<div class="qhead"><div class="qnum">${idx+1}</div><div><div class="qtext">${item.q}</div><div class="qhint">${item.hint}</div></div></div>`;
+    const opts = document.createElement('div');
+    opts.className = 'options';
+    item.options.forEach((text, optIdx)=>{
+      const id = `${item.id}_${optIdx}`;
+      const label = document.createElement('label');
+      label.className = 'option';
+      const checked = answers[item.id].includes(text);
+      if(checked) label.classList.add('selected');
+      label.innerHTML = `<input id="${id}" type="${item.type==='single'?'radio':'checkbox'}" name="${item.id}" ${checked?'checked':''}><span>${text}</span>`;
+      label.querySelector('input').addEventListener('change', ()=>selectAnswer(item, text));
+      opts.appendChild(label);
+    });
+    card.appendChild(opts);
+    questionsEl.appendChild(card);
+  });
+  updateSummary();
+}
+
+function selectAnswer(item, text){
+  const current = answers[item.id] || [];
+  if(item.type === 'single'){
+    answers[item.id] = [text];
+  } else {
+    if(current.includes(text)){
+      answers[item.id] = current.filter(x=>x!==text);
+    } else {
+      if(item.max && current.length >= item.max){
+        statusEl.textContent = `You can select up to ${item.max} for this question.`;
+        setTimeout(()=>statusEl.textContent='',1800);
+        return;
+      }
+      answers[item.id] = [...current, text];
+    }
+  }
+  render();
+}
+
+function updateSummary(){
+  const lines = ['My treatment preference summary', ''];
+  questions.forEach(q=>{
+    const selected = answers[q.id] || [];
+    lines.push(`${q.label}:`);
+    if(selected.length){
+      selected.forEach(x=>lines.push(`- ${x}`));
+    } else {
+      lines.push('- Not selected');
+    }
+    lines.push('');
+  });
+  summaryEl.value = lines.join('\n').trim();
+}
+
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  try{
+    await navigator.clipboard.writeText(summaryEl.value);
+    statusEl.textContent = 'Summary copied.';
+  } catch(e){
+    summaryEl.focus();
+    summaryEl.select();
+    document.execCommand('copy');
+    statusEl.textContent = 'Summary copied.';
+  }
+});
+
+document.getElementById('clearBtn').addEventListener('click', ()=>{
+  Object.keys(answers).forEach(k=>answers[k]=[]);
+  statusEl.textContent = 'Answers cleared.';
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
